@@ -37,7 +37,7 @@
     <mappu-map id='map' 
     	map={{map}}
     	center=[4.89064,52.37469]
-    	zoom=22
+    	zoom=21
     	>
     	
     </mappu-map>
@@ -181,6 +181,21 @@
 				url: "http://tile.stamen.com/toner/{z}/{x}/{y}.png"
 				
 			}).addTo(this.map);*/
+			var waterLayer = new d3.mappu.VectorTileLayer('water',{
+				url: "http://tile.mapzen.com/mapzen/vector/v1/water/{z}/{x}/{y}.topojson?api_key=vector-tiles--R28NDY",
+				layername: 'water',
+				style:{
+					stroke: '#c1d8ff',
+					'stroke-width': '1px',
+					fill: '#c1d8ff',
+					'stroke-linejoin': 'round',
+					'stroke-linecap': 'round'
+				},
+				filter: function(d){
+					return d.geometry.type.indexOf('Polygon') > -1;
+				}
+			}).addTo(this.map);	
+			
       	  var scale = function(d){
       	  	  var s = d3.scale.linear().range(['blue','red']).domain([0,1]);
       	  	  return s(d.properties.fullness);
@@ -204,26 +219,14 @@
 				}
 			}).addTo(this.map);
 		
-		var waterLayer = new d3.mappu.VectorTileLayer('water',{
-				url: "http://tile.mapzen.com/mapzen/vector/v1/water/{z}/{x}/{y}.topojson?api_key=vector-tiles--R28NDY",
-				layername: 'water',
-				style:{
-					stroke: '#c1d8ff',
-					'stroke-width': '1px',
-					fill: '#c1d8ff',
-					'stroke-linejoin': 'round',
-					'stroke-linecap': 'round'
-				},
-				filter: function(d){
-					return d.geometry.type.indexOf('Polygon') > -1;
-				}
-			}).addTo(this.map);	
+		
 			
       	  
       	  this.isoLayer = new d3.mappu.VectorLayer('IsoChrones',{
     		reproject: false,
     		style: {
-    			'fill-opacity': 0.2,
+    			'fill-opacity':0.01,
+    			'stroke-opacity':1,
     			fill: 'steelBlue',
     			stroke: 'steelBlue'
     		}
@@ -231,14 +234,26 @@
 		  this.isoFietsLayer = new d3.mappu.VectorLayer('IsoChronesFiets',{
     		reproject: false,
     		style: {
-    			opacity: 0,
+    			'fill-opacity':0.01,
+    			'stroke-opacity':1,
     			fill: 'orange',
     			stroke: 'orange'
     		}
 		  }).addTo(this.map);
 		  this.locationLayer = new d3.mappu.VectorLayer('Locations',{
     		reproject: true,
-    		labelfield: 'label'
+    		labelfield: 'label',
+    		events: [{
+    			event: 'mouseover',
+    			action: function(d){
+    				d3.selectAll('#entity'+d.id).select('path').transition().style('fill-opacity',0.3);
+    			}
+    		},{
+    			event: 'mouseout',
+    			action: function(d){
+    				d3.selectAll('#entity'+d.id).select('path').transition().style('fill-opacity',0.01);
+    			}
+    		}]
 		  }).addTo(this.map);
 		  this.fietslocationLayer = new d3.mappu.VectorLayer('OVFietsLocations',{
     		reproject: true,
@@ -257,15 +272,32 @@
     		events: [{
     			event: 'mouseover',
     			action: function(d){
-    				d3.selectAll('#entity'+d.id).select('path').transition().style('opacity',0.2);
+    				d3.selectAll('#entity'+d.id).select('path').transition().style('fill-opacity',0.3);
     			}
     		},{
     			event: 'mouseout',
     			action: function(d){
-    				d3.selectAll('#entity'+d.id).select('path').transition().style('opacity',0);
+    				d3.selectAll('#entity'+d.id).select('path').transition().style('fill-opacity',0.01);
     			}
     		}]
 		  }).addTo(this.map);
+		  var speedscale = function(d){
+      	  	  var s = d3.scaleLinear().range(['blue','yellow','red']).domain([0,50,130]);
+      	  	  return s(d.properties.maxspeed);
+      	  }
+		  var ndwLayer = new d3.mappu.VectorLayer('ndw',{
+		  		  reproject: true,
+		  		  style: {
+		  		  	  stroke: speedscale,
+		  		  	  fill: speedscale
+		  		  }
+		  }).addTo(this.map);
+		  var ndwurl = 'http://192.168.40.8:3389/geoserver/research/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=research:tmp&maxFeatures=50000&outputFormat=application%2Fjson';
+		  d3.json(ndwurl,function(error,d){
+		  		  if (error) throw error;
+		  		  ndwLayer.data = d.features;
+		  });
+		  
 		  window.map = this.map;
 		  
       },
