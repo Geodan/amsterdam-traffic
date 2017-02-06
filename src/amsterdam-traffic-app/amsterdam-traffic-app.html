@@ -1,0 +1,277 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/mappu-elements/mappu-map.html">
+<link rel="import" href="../../bower_components/gost-elements/gost-thing.html">
+<!-- TODO: replace with bower versions -->
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-tile.v0.0.min.js"></script>
+<script src="//d3js.org/topojson.v2.min.js"></script>
+
+<dom-module id="amsterdam-traffic-app">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+      
+	mappu-map{
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		background: ivory;
+	}
+	
+	.tile {
+	  position: absolute;
+	  width: 256px;
+	  height: 256px;
+	}
+	
+	.tile path {
+	  fill: none;
+	  stroke-linejoin: round;
+	  stroke-linecap: round;
+	}
+	
+    </style>
+    
+    <mappu-map id='map' 
+    	map={{map}}
+    	center=[4.89064,52.37469]
+    	zoom=22
+    	>
+    	
+    </mappu-map>
+    <iron-ajax auto
+			url=[[thingsUrl]]
+			params=[[parkingParams]]
+			handle-as="json"
+			on-response='_handleThingsArray'
+			></iron-ajax>
+	<iron-ajax auto
+			url=[[thingsUrl]]
+			params=[[ovFietsParams]]
+			handle-as="json"
+			on-response='_handleOVFietsArray'
+			></iron-ajax>
+    </template>
+    
+  </template>
+
+  <script>
+    Polymer({
+
+      is: 'amsterdam-traffic-app',
+
+      properties: {
+        prop1: {
+          type: String,
+          value: 'amsterdam-traffic-app',
+        },
+        map: {
+			type: Object,
+			observer: '_mapChanged'
+		},
+		locations: {
+			type: Array,
+			value: function(){return [];}
+		},
+		thingsUrl: {
+			type: String,
+			value: "http://gost.geodan.nl/v1.0/Things"
+		},
+		parkingParams: {
+			type: Object,
+			value: function(){
+				return {
+				"$filter":"properties.type eq 'parking facility'",
+				"$select":"id,name,properties",
+				"$expand":"Locations($select=location),Datastreams($select=id,name,observationType)/Observations($top=1;$select=result,phenomenonTime)"
+				};
+			}
+		},
+		ovFietsParams: {
+			type: Object,
+			value: function(){
+				return {
+				"$filter":"properties.property1 eq 'bikecount'",
+				"$select":"id,name,properties",
+				"$expand":"Locations($select=location),Datastreams($select=id,name,observationType)/Observations($top=1;$select=result,phenomenonTime)"
+				};
+			}
+		}
+      },
+      observers: [
+      ],
+      _handleThingsArray: function(res){
+      	  this.things = res.detail.response.value;
+      	  var geojson = [];
+      	  var locations = [];
+      	  
+      	  this.things.forEach(d=>{
+      	  		  var freespots = d.Datastreams.filter(x=>{
+      	  		  		  return x.name.indexOf('Open parking spots') > -1;
+      	  		  		  //return true;
+      	  		  })[0].Observations[0];
+      	  		  var fullness = freespots.result / d.properties.parkingSpots; 
+      	  		  
+				  geojson.push({
+					  type: 'Feature',
+					  id: d["@iot.id"],
+					  geometry: d.properties.isochrone
+				  });
+				  
+				  locations.push({
+					  id: d["@iot.id"],
+					  geometry: d.Locations[0].location,
+					  properties: {
+						  label: freespots.result,
+					  	  spots: freespots.result,
+					  	  fullness: fullness,
+					  	  time: freespots.phenomenonTime
+					  },
+					  style: {
+						  'marker-url':'./assets/parking-icon-png-10866.png'
+					  }
+				  });
+
+      	  });
+      	  this.isoLayer.data = geojson; 
+      	  this.locationLayer.data = locations;
+      },
+      _handleOVFietsArray: function(res){
+      	  this.things = res.detail.response.value;
+      	  var geojson = [];
+      	  var locations = [];
+      	  
+      	  this.things.forEach(d=>{
+			  if (d.Datastreams[0] && d.Datastreams[0].Observations){
+				  var observation = d.Datastreams[0].Observations[0];
+				  
+				  geojson.push({
+					  type: 'Feature',
+					  id: d["@iot.id"],
+					  geometry: d.properties.isochrone
+				  });
+				  
+				  locations.push({
+					  id: d["@iot.id"],
+					  geometry: d.Locations[0].location,
+					  properties: {
+						  label: observation.result,
+						  available: observation.result,
+						  time: observation.phenomenonTime
+					  },
+					  style: {
+						  'marker-url':'./assets/ovfiets.png'
+					  }
+				  });
+			  }
+      	  });
+      	  this.isoFietsLayer.data = geojson;
+      	  this.fietslocationLayer.data = locations;
+      },
+      _getId: function(item){
+      	  return item["@iot.id"];
+      },
+      _mapChanged: function(){
+      	  /*
+      	  var layer = new d3.mappu.RasterLayer('layer1', {
+				ogc_type: 'tms',
+				//url: "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+				url: "http://tile.stamen.com/toner/{z}/{x}/{y}.png"
+				
+			}).addTo(this.map);*/
+      	  var scale = function(d){
+      	  	  var s = d3.scale.linear().range(['blue','red']).domain([0,1]);
+      	  	  return s(d.properties.fullness);
+      	  }
+      	  
+      	  //var colorscale = d3.scaleOrdinal(d3.schemeCategory10);
+      	  var colorscale = d3.scaleOrdinal().range(['lightGrey', 'Grey']);
+      	  
+      	  var vectortileLayer = new d3.mappu.VectorTileLayer('vtile',{
+				url: "http://tile.mapzen.com/mapzen/vector/v1/roads/{z}/{x}/{y}.topojson?api_key=vector-tiles--R28NDY",
+				layername: 'roads',
+				style:{
+					stroke: function(d){
+						return colorscale(d.properties.kind); 
+					},
+					'stroke-width': '1px',
+					fill: 'red',
+					'stroke-opacity': 0.2,
+					'stroke-linejoin': 'round',
+					'stroke-linecap': 'round'
+				}
+			}).addTo(this.map);
+		
+		var waterLayer = new d3.mappu.VectorTileLayer('water',{
+				url: "http://tile.mapzen.com/mapzen/vector/v1/water/{z}/{x}/{y}.topojson?api_key=vector-tiles--R28NDY",
+				layername: 'water',
+				style:{
+					stroke: '#c1d8ff',
+					'stroke-width': '1px',
+					fill: '#c1d8ff',
+					'stroke-linejoin': 'round',
+					'stroke-linecap': 'round'
+				},
+				filter: function(d){
+					return d.geometry.type.indexOf('Polygon') > -1;
+				}
+			}).addTo(this.map);	
+			
+      	  
+      	  this.isoLayer = new d3.mappu.VectorLayer('IsoChrones',{
+    		reproject: false,
+    		style: {
+    			'fill-opacity': 0.2,
+    			fill: 'steelBlue',
+    			stroke: 'steelBlue'
+    		}
+		  }).addTo(this.map);
+		  this.isoFietsLayer = new d3.mappu.VectorLayer('IsoChronesFiets',{
+    		reproject: false,
+    		style: {
+    			opacity: 0,
+    			fill: 'orange',
+    			stroke: 'orange'
+    		}
+		  }).addTo(this.map);
+		  this.locationLayer = new d3.mappu.VectorLayer('Locations',{
+    		reproject: true,
+    		labelfield: 'label'
+		  }).addTo(this.map);
+		  this.fietslocationLayer = new d3.mappu.VectorLayer('OVFietsLocations',{
+    		reproject: true,
+    		labelfield: 'label',
+    		labelStyle: {
+    			stroke: function(d){
+    				if (d.properties.available == 0){
+    					return 'red';
+    				}
+    				else if (d.properties.available < 10){
+    					return 'orange';
+    				}
+    				else return 'green';
+    			}
+    		},
+    		events: [{
+    			event: 'mouseover',
+    			action: function(d){
+    				d3.selectAll('#entity'+d.id).select('path').transition().style('opacity',0.2);
+    			}
+    		},{
+    			event: 'mouseout',
+    			action: function(d){
+    				d3.selectAll('#entity'+d.id).select('path').transition().style('opacity',0);
+    			}
+    		}]
+		  }).addTo(this.map);
+		  window.map = this.map;
+		  
+      },
+      attached: function(){
+      	  this.map.resize();
+      }
+    });
+  </script>
+</dom-module>

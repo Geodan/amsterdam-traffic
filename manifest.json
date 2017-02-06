@@ -1,0 +1,7 @@
+{
+  "name": "amsterdam-traffic",
+  "short_name": "amsterdam-traffic",
+  "description": "Dashboard and app about parking and traffic in Amsterdam",
+  "start_url": "/",
+  "display": "standalone"
+}

@@ -1,0 +1,15 @@
+{
+  "name": "amsterdam-traffic",
+  "description": "Dashboard and app about parking and traffic in Amsterdam",
+  "main": "index.html",
+  "dependencies": {
+    "polymer": "Polymer/polymer#~1",
+    "mappu-elements": "geodanElements/mappu-elements#~0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^1.0.0",
+    "web-component-tester": "^4.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  }
+}
