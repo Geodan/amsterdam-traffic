@@ -1,0 +1,76 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<dom-module id="app-ovfiets">
+<template>
+<style>
+</style>
+<iron-ajax auto
+		url=[[thingsurl]]
+		params=[[params]]
+		handle-as="json"
+		on-response='_handleThingsArray'
+		></iron-ajax>
+		
+</template>
+
+<script>
+Polymer({
+      is: 'app-ovfiets',
+      properties: {
+      	  things: {
+      	  	  type: Array
+      	  },
+      	  locations: {
+      	  	  type: Array
+      	  },
+      	  isochrones: {
+      	  	  type: Array
+      	  },
+      	  params: {
+			type: Object,
+			value: function(){
+				return {
+				"$filter":"properties.property1 eq 'bikecount'",
+				"$select":"id,name,properties",
+				"$expand":"Locations($select=location),Datastreams($select=id,name,observationType)/Observations($top=1;$select=result,phenomenonTime)"
+				};
+			}
+		},
+      },
+		_handleThingsArray: function(res){
+			  this.things = res.detail.response.value;
+			  var geojson = [];
+			  var locations = [];
+			  
+			  this.things.forEach(d=>{
+				  if (d.Datastreams[0] && d.Datastreams[0].Observations){
+					  var observation = d.Datastreams[0].Observations[0];
+					  
+					  geojson.push({
+						  type: 'Feature',
+						  id: d["@iot.id"],
+						  geometry: d.properties.isochrone
+					  });
+					  
+					  locations.push({
+						  id: d["@iot.id"],
+						  geometry: d.Locations[0].location,
+						  properties: {
+							  name: d.name,
+							  label: observation.result,
+							  available: observation.result,
+							  time: observation.phenomenonTime,
+							  datastreamid: d.Datastreams[0]["@iot.id"]
+						  },
+						  style: {
+							  'marker-url':'./assets/ovfiets.png'
+						  }
+					  });
+				  }
+			  });
+			this.fire('locations',locations);
+			this.fire('isochrones',geojson);
+		}
+});
+</script>
+</dom-module>
