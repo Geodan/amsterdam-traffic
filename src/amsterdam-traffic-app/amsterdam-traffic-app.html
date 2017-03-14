@@ -140,7 +140,7 @@
 				
 			}).addTo(this.map);
 			
-			
+			/*
 			new d3.mappu.VectorTileLayer('water',{
 				url: "http://tile.mapzen.com/mapzen/vector/v1/water/{z}/{x}/{y}.topojson?api_key=vector-tiles--R28NDY",
 				layername: 'water',
@@ -153,6 +153,7 @@
 					return d.geometry.type.indexOf('Polygon') > -1;
 				}
 			}).addTo(this.map);
+			/* */
 			/*
 			var roadscaleStroke = d3.scaleOrdinal()
 				.domain(['rail','highway','major_road','minor_road','ferry'])
@@ -280,7 +281,7 @@
     		}]
 		  }).addTo(this.map);
 		  
-		  /* NDW
+		  /* NDW */
 		  var speedscale = function(d){
       	  	  var s = d3.scaleLinear().range(['blue','yellow','red']).domain([0,50,130]);
       	  	  return s(d.properties.maxspeed);
