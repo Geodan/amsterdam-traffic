@@ -6,6 +6,7 @@
 <link rel="import" href="../bower_components/gost-elements/gost-thing.html">
 <link rel="import" href="../bower_components/gost-elements/gost-chart.html">
 <link rel="import" href="app-parking.html">
+<link rel="import" href="ndw-graph.html">
 
 <!-- TODO: replace with bower versions -->
 <script src="https://d3js.org/d3.v4.min.js"></script>
@@ -29,7 +30,7 @@
 		min-height: 1000px; 
 	}
 	#sidebar {
-		width: 35%;
+		width: 5%;
 		height: 100%;
 	}
 	.tile {
@@ -52,12 +53,13 @@
     	<div id="content" class="flex">
 			<mappu-map class="fit" id='map' 
 				map={{map}}
-				center=[4.940509,52.313955]
-				zoom=23
-				
+				center=[4.950509,52.30]
+				zoom=20
 			></mappu-map>
 		</div>
 		<div id="sidebar">
+			<ndw-graph id="RWS01_MONIBAS_0121hrl%" title="A2" url='../data/flow_a2_coldplay'></ndw-graph>
+			<ndw-graph id="RWS01_MONIBAS_0091hrr0%" title="A9" url='../data/flow_a9_coldplay'></ndw-graph>
 			<gost-chart id='gostchart'
 				label='Grafiek'
 				resultarray=[[observations]]
@@ -190,13 +192,13 @@
                   stroke: 'steelBlue'
               }
           }).addTo(this.map);
-
+          /*
           d3.json("../data/coldplay_23jun.json", function(error, data) {
               if (error) throw error;
-
+              
               var features = topojson.feature(data, data.objects.coldplay_23jun);
               self.tomtomLayer.data = features.features;
-          });
+          });*/
 
 		  var openChart = function(d){
 		  	var app = document.querySelector('amsterdam-traffic-app');
@@ -250,6 +252,7 @@
 		  		  	  fill: speedscale
 		  		  }
 		  }).addTo(this.map);
+		  /*
 		  var ndwurl = 'http://192.168.40.8:3389/geoserver/research/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=research:tmp&maxFeatures=50000&outputFormat=application%2Fjson';
 		  d3.json(ndwurl,function(error,d){
 		  		  if (error) throw error;
@@ -262,6 +265,8 @@
       },
       attached: function(){
       	  this.map.resize();
+      	  
+      	  
       }
     });
   </script>

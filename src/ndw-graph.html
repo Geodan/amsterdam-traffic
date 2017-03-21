@@ -1,0 +1,133 @@
+<dom-module id="ndw-graph">
+
+      <template>
+        <style>
+        #graph {
+        	width: 20%;
+        }
+        .axis--x text {
+		  font: 10px sans-serif;
+		}
+		
+		.axis--y text {
+		  font: oblique 12px Georgia, serif;
+		}
+		
+		.axis path,
+		.axis line {
+		  fill: none;
+		  stroke: #000;
+		  shape-rendering: crispEdges;
+		}
+		
+		.milestone {
+				font: oblique 10px Georgia, serif;
+		}
+        </style>
+
+        
+
+        <div id="graph"></div>
+        
+      </template>
+
+      <script>
+        Polymer({
+          is: "ndw-graph",
+
+          properties: {
+            title: String,
+            url: {
+            	type: String,
+            	observer: '_urlChanged'
+            }
+          },
+          
+          ready: function(){
+          	var margin = {top: 40, right: 40, bottom: 40, left: 40},
+				width = 300 - margin.left - margin.right,
+				height = 500 - margin.top - margin.bottom;
+			this.scaley = d3.scaleLinear().range([height,0]).domain([20,150]);
+			this.scalex = d3.scaleTime().range([0,width]).domain([new Date('2016-06-23 17:00') ,new Date('2016-06-23 21:30')]);
+			
+				
+			this.xAxis = d3.axisBottom(this.scalex)
+					.tickFormat(d3.timeFormat('%H:%M'))
+					.ticks(d3.timeMinute, 30);
+		
+			this.yAxis = d3.axisLeft(this.scaley);
+			
+			var svg = d3.select(this.$.graph).append('svg')
+				.attr("width", width + margin.left + margin.right)
+				.attr("height", height + margin.top + margin.bottom)
+				.append("g")
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+			svg.append('g').classed('drawboard',true);
+			
+			svg.append("g")
+				.attr("class", "axis axis--y")
+				.attr("transform", "translate(-10,0)")
+				.call(this.yAxis);
+		
+			svg.append("g")
+				.attr("class", "axis axis--x")
+				.attr("transform", "translate(0," + (height + 10) + ")")
+				.call(this.xAxis)
+				.selectAll("text")
+				.attr("y", 0)
+				.attr("x", 9)
+				.attr("dy", ".35em")
+				.attr("transform", "rotate(45)")
+				.style("text-anchor", "start");
+			
+			svg.append('text').attr('x',0).attr('y',-20).text(this.title);
+          },
+          _urlChanged: function(url){
+          	  var self = this;
+          	  d3.csv(url,(error,data)=>{
+      	  		  if (error){console.log(error);}
+      	  		  self.addData(data);
+			  });
+          },
+          addData: function(data){
+          	  var self = this;
+          	  var mindist = d3.min(data, function(d){return d.dist;})
+          	  var maxdist = d3.max(data, function(d){return d.dist;})
+          	  this.scaley.domain([mindist, maxdist]);
+          	  
+          	  var mindate = d3.min(data, function(d){return d.date;})
+          	  var maxdate = d3.max(data, function(d){return d.date;})
+          	  this.scalex.domain([new Date(mindate), new Date(maxdate)]);
+          	  
+          	  var speedcolor = d3.scaleLinear()
+				.domain([0,50,130])
+				.range(['purple','red','yellow']);
+			  var flowcolor = d3.scaleLinear()
+				.domain([1000,3000,8000])
+				.range(['purple','red','yellow']);
+          	  	var drawboard = d3.select(this.$.graph).select('.drawboard');
+				circle = drawboard.selectAll('circle').data(data);
+				
+				circle.enter().append('circle')
+					.attr('cx',function(d){
+						var date = new Date(d.date);
+						return self.scalex(date);
+					})
+					.attr('cy',function(d){
+						return self.scaley(d.dist / 10);
+					})
+					.style('fill',function(d){
+						switch ('speed'){
+							case 'speed':
+									return speedcolor(d.vehiclespeed);
+							case 'flow':
+									return flowcolor(d.vehicleflow);
+						}
+					})
+					.attr('r',1.5)
+          }
+
+        });
+      </script>
+
+    </dom-module>
