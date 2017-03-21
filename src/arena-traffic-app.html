@@ -12,6 +12,9 @@
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://d3js.org/d3-tile.v0.0.min.js"></script>
 <script src="//d3js.org/topojson.v2.min.js"></script>
+<script src="https://d3js.org/d3-queue.v3.min.js"></script>
+<script src="https://unpkg.com/topojson-simplify@2"></script>
+
 
 
 <dom-module id="arena-traffic-app">
@@ -66,12 +69,13 @@
 			></gost-chart>
 		</div>
     </div>
+    <!--
     <app-parking
     	thingsurl=[[thingsurl]]
     	on-locations='_handleParkingLocations'
     	on-isochrones='_handleParkingIsochrones'
     ></app-parking>
-    
+    -->
 	
 	<iron-ajax id='streamrequest'
 		url='[[getStreamUrl]]'
@@ -120,16 +124,13 @@
       },
       _mapChanged: function(){
       	  var self = this;
-      	  /*
+      	  
       	  var layer = new d3.mappu.RasterLayer('Achtergrond', {
 				ogc_type: 'tms',
-				//url: "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-				url: "http://tile.stamen.com/toner/{z}/{x}/{y}.png",
-				opacity: 0.4
-				
+				url: "http://tile.stamen.com/toner/{z}/{x}/{y}.png"
 			}).addTo(this.map);
-			*/
 			
+			/*
 			new d3.mappu.VectorTileLayer('water',{
 				url: "http://tile.mapzen.com/mapzen/vector/v1/water/{z}/{x}/{y}.topojson?api_key=vector-tiles--R28NDY",
 				layername: 'water',
@@ -143,7 +144,7 @@
 				}
 			}).addTo(this.map);
 			/* */
-			
+			/*
 			var roadscaleStroke = d3.scaleOrdinal()
 				.domain(['rail','highway','major_road','minor_road','ferry'])
 				.range(['#cbc9e2','#cbc9e2','#cbc9e2','#cbc9e2','#cbc9e2']);
@@ -167,21 +168,36 @@
 					return d.geometry.type.indexOf('LineString') > -1;
 				}
 			}).addTo(this.map);
+			*/
 			
-      	  var scale = function(d){
-      	  	  var s = d3.scale.linear().range(['blue','red']).domain([0,1]);
-      	  	  return s(d.properties.fullness);
-      	  }
+//      	  var scale = function(d){
+//      	  	  var s = d3.scale.linear().range(['blue','red']).domain([0,1]);
+//      	  	  return s(d.properties.fullness);
+//      	  }
       	  
-      	  this.isoLayer = new d3.mappu.VectorLayer('5 minuten lopen',{
-    		reproject: false,
-    		style: {
-    			'fill-opacity':0,
-    			'stroke-opacity':0,
-    			fill: 'none',
-    			stroke: 'steelBlue'
-    		}
-		  }).addTo(this.map);
+//      	  this.isoLayer = new d3.mappu.VectorLayer('5 minuten lopen',{
+//    		reproject: false,
+//    		style: {
+//    			'fill-opacity':0,
+//    			'stroke-opacity':0,
+//    			fill: 'none',
+//    			stroke: 'steelBlue'
+//    		}
+//		  }).addTo(this.map);
+//		  this.isoFietsLayer = new d3.mappu.VectorLayer('10 minuten fietsen',{
+//    		reproject: false,
+//    		style: {
+//    			'fill-opacity':0,
+//    			'stroke-opacity':0,
+//    			fill: 'none',
+//    			stroke: 'orange'
+//    		}
+//		  }).addTo(this.map);
+
+          var tomtomStrokeColor = d3.scaleLinear()
+              .domain([0, 0.01, 0.5, 1, 2])
+              .range(['lightGrey', 'red', 'yellow', 'green', 'darkGreen']);
+
 
           this.tomtomLayer = new d3.mappu.VectorLayer('TomTomLayer',{
               reproject: false,
@@ -189,76 +205,131 @@
                   'fill-opacity':1,
                   'stroke-opacity':1,
                   fill: 'none',
-                  stroke: 'steelBlue'
+                  stroke: function(d) {
+                      return tomtomStrokeColor(d.properties.ms1800/d.properties.msbase);
+                  },
+				  'stroke-width': '0.0000006px'
               }
           }).addTo(this.map);
-          /*
-          d3.json("../data/coldplay_23jun.json", function(error, data) {
-              if (error) throw error;
-              
-              var features = topojson.feature(data, data.objects.coldplay_23jun);
-              self.tomtomLayer.data = features.features;
-          });*/
 
-		  var openChart = function(d){
-		  	var app = document.querySelector('amsterdam-traffic-app');
-			var id = d.properties.datastreamid;
-			app.$.streamrequest.url = 'http://gost.geodan.nl/v1.0/Datastreams('+id+')/Observations';
-			app.$.streamrequest.generateRequest();
-			app.$.gostchart.label = d.properties.name;
+          d3.queue()
+              .defer(d3.json, "../data/coldplayDonderdagHoofdwegenFilteredGeom.json")
+              .defer(d3.csv, "../data/coldplayDonderdagHoofdwegenFilteredAttr.csv")
+              .await(merge);
+
+          function merge(error, coldplayDonderdagSelectionGeom, coldplayDonderdagSelectionAttr) {
+              if(error) { console.log(error); }
+
+              for (i = 0; i < coldplayDonderdagSelectionGeom.objects.coldplayDonderdagHoofdwegenFilteredGeom.geometries.length; i++) {
+                  for (j = 0; j < coldplayDonderdagSelectionAttr.length; j++) {
+                      if (coldplayDonderdagSelectionGeom.objects.coldplayDonderdagHoofdwegenFilteredGeom.geometries[i].properties.id == coldplayDonderdagSelectionAttr[j].id) {
+                          coldplayDonderdagSelectionGeom.objects.coldplayDonderdagHoofdwegenFilteredGeom.geometries[i].properties = coldplayDonderdagSelectionAttr[j];
+					  }
+				  }
+              }
+
+			  var features = topojson.feature(coldplayDonderdagSelectionGeom, coldplayDonderdagSelectionGeom.objects.coldplayDonderdagHoofdwegenFilteredGeom);
+              self.tomtomLayer.data = features.features;
 		  }
+
+//		  var openChart = function(d){
+//		  	var app = document.querySelector('amsterdam-traffic-app');
+//			var id = d.properties.datastreamid;
+//			app.$.streamrequest.url = 'http://gost.geodan.nl/v1.0/Datastreams('+id+')/Observations';
+//			app.$.streamrequest.generateRequest();
+//			app.$.gostchart.label = d.properties.name;
+//		  }
 		  
-		  this.locationLayer = new d3.mappu.VectorLayer('Parkeergarages',{
-    		reproject: true,
-    		style: {
-    			fill: function(d){return d.properties.isopen?'green':'red';},
-    			radius: 10,
-    			'marker-url': './assets/parking-128.png'
-    		},
-    		labelfield: 'label',
-    		labelStyle: {
-    			'font-family':"'Open Sans Light',Helvetica,Arial,sans-serif",
-    			'font-size':'20',
-    			stroke: 'none',
-    			
-    		},
-    		events: [{
-    			event: 'click',
-    			action: openChart
-    		},{
-    			event: 'mouseenter',
-    			action: function(d){
-    				d3.selectAll('#entity'+d.id).select('path').style('fill','orange').transition().style('fill-opacity',0.6);
-    			}
-    		},{
-    			event: 'mouseleave',
-    			action: function(d){
-    				d3.selectAll('#entity'+d.id).select('path').transition().style('fill-opacity',0.01).style('fill','none');
-    			}
-    		}]
-		  }).addTo(this.map);
-		  var self = this;
+
+//		  this.locationLayer = new d3.mappu.VectorLayer('Parkeergarages',{
+//    		reproject: true,
+//    		style: {
+//    			fill: function(d){return d.properties.isopen?'green':'red';},
+//    			radius: 10,
+//    			'marker-url': './assets/parking-128.png'
+//    		},
+//    		labelfield: 'label',
+//    		labelStyle: {
+//    			'font-family':"'Open Sans Light',Helvetica,Arial,sans-serif",
+//    			'font-size':'20',
+//    			stroke: 'none',
+//
+//    		},
+//    		events: [{
+//    			event: 'click',
+//    			action: openChart
+//    		},{
+//    			event: 'mouseenter',
+//    			action: function(d){
+//    				d3.selectAll('#entity'+d.id).select('path').style('fill','orange').transition().style('fill-opacity',0.6);
+//    			}
+//    		},{
+//    			event: 'mouseleave',
+//    			action: function(d){
+//    				d3.selectAll('#entity'+d.id).select('path').transition().style('fill-opacity',0.01).style('fill','none');
+//    			}
+//    		}]
+//		  }).addTo(this.map);
+//		  var self = this;
 		  
-		  /* NDW */
-		  var speedscale = function(d){
-      	  	  var s = d3.scaleLinear().range(['blue','yellow','red']).domain([0,50,130]);
-      	  	  return s(d.properties.maxspeed);
-      	  }
-      	  
-		  var ndwLayer = new d3.mappu.VectorLayer('ndw',{
-		  		  reproject: true,
-		  		  style: {
-		  		  	  stroke: speedscale,
-		  		  	  fill: speedscale
-		  		  }
-		  }).addTo(this.map);
-		  /*
-		  var ndwurl = 'http://192.168.40.8:3389/geoserver/research/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=research:tmp&maxFeatures=50000&outputFormat=application%2Fjson';
-		  d3.json(ndwurl,function(error,d){
-		  		  if (error) throw error;
-		  		  ndwLayer.data = d.features;
-		  });
-		  /* */
+//		  var labelColor = function(d){
+//    				if (d.properties.available == 0){
+//    					return 'red';
+//    				}
+//    				else if (d.properties.available < 10){
+//    					return 'orange';
+//    				}
+//    				else return 'green';
+//    	  };
+//		  this.fietslocationLayer = new d3.mappu.VectorLayer('OVFiets punten',{
+//    		reproject: true,
+//    		style: {
+//    			fill: function(d){return d.properties.isopen?'green':'red';},
+//    			radius: 10,
+//    			'marker-url': './assets/parking-128.png'
+//    		},
+//    		labelfield: 'label',
+//    		labelStyle: {
+//    			'font-family':"'Open Sans Light',Helvetica,Arial,sans-serif",
+//    			'font-size':'20',
+//    			stroke: 'none',
+//    			fill: labelColor
+//    		},
+//    		events: [{
+//    			event: 'click',
+//    			action: openChart
+//    		},{
+//    			event: 'mouseover',
+//    			action: function(d){
+//    				d3.selectAll('#entity'+d.id).select('path').style('fill','orange').style('fill-opacity',0.3);
+//    			}
+//    		},{
+//    			event: 'mouseout',
+//    			action: function(d){
+//    				d3.selectAll('#entity'+d.id).select('path').transition().style('fill-opacity',0.01).style('fill','none');
+//    			}
+//    		}]
+//		  }).addTo(this.map);
+//
+//		  /* NDW */
+//		  var speedscale = function(d){
+//      	  	  var s = d3.scaleLinear().range(['blue','yellow','red']).domain([0,50,130]);
+//      	  	  return s(d.properties.maxspeed);
+//      	  }
+//
+//		  var ndwLayer = new d3.mappu.VectorLayer('ndw',{
+//		  		  reproject: true,
+//		  		  style: {
+//		  		  	  stroke: speedscale,
+//		  		  	  fill: speedscale
+//		  		  }
+//		  }).addTo(this.map);
+//		  var ndwurl = 'http://192.168.40.8:3389/geoserver/research/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=research:tmp&maxFeatures=50000&outputFormat=application%2Fjson';
+//		  d3.json(ndwurl,function(error,d){
+//		  		  if (error) throw error;
+//		  		  ndwLayer.data = d.features;
+//		  });
+//		  /* */
 		  
 		  window.map = this.map;
 		  

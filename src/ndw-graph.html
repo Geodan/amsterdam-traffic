@@ -93,11 +93,13 @@
           	  var self = this;
           	  var mindist = d3.min(data, function(d){return d.dist;})
           	  var maxdist = d3.max(data, function(d){return d.dist;})
-          	  this.scaley.domain([mindist, maxdist]);
+          	  this.scaley.domain([mindist/10, maxdist/10]);
+          	  d3.select(this.$.graph).select('.axis--y').transition().duration(1500).call(this.yAxis); 
           	  
           	  var mindate = d3.min(data, function(d){return d.date;})
           	  var maxdate = d3.max(data, function(d){return d.date;})
           	  this.scalex.domain([new Date(mindate), new Date(maxdate)]);
+          	  d3.select(this.$.graph).select('.axis--x').transition().duration(1500).call(this.xAxis);
           	  
           	  var speedcolor = d3.scaleLinear()
 				.domain([0,50,130])
