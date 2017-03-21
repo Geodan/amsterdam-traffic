@@ -7,14 +7,12 @@
 <link rel="import" href="../bower_components/gost-elements/gost-chart.html">
 <link rel="import" href="app-parking.html">
 <link rel="import" href="ndw-graph.html">
+<link rel="import" href="tomtom-layer.html">
 
 <!-- TODO: replace with bower versions -->
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://d3js.org/d3-tile.v0.0.min.js"></script>
-<script src="//d3js.org/topojson.v2.min.js"></script>
-<script src="https://d3js.org/d3-queue.v3.min.js"></script>
 <script src="https://unpkg.com/topojson-simplify@2"></script>
-
 
 
 <dom-module id="arena-traffic-app">
@@ -25,7 +23,7 @@
         display: block;
     }
 	mappu-map {
-		--map-background: #756bb1;
+		--map-background: white;
 		cursor: crosshair;
 	}
 	
@@ -59,6 +57,9 @@
 				center=[4.950509,52.30]
 				zoom=20
 			></mappu-map>
+			<tomtom-layer 
+				map=[[map]]
+			></tomtom-layer>
 		</div>
 		<div id="sidebar">
 			<ndw-graph id="RWS01_MONIBAS_0121hrl%" title="A2" url='../data/flow_a2_coldplay'></ndw-graph>
@@ -194,43 +195,7 @@
 //    		}
 //		  }).addTo(this.map);
 
-          var tomtomStrokeColor = d3.scaleLinear()
-              .domain([0, 0.01, 0.5, 1, 2])
-              .range(['lightGrey', 'red', 'yellow', 'green', 'darkGreen']);
-
-
-          this.tomtomLayer = new d3.mappu.VectorLayer('TomTomLayer',{
-              reproject: false,
-              style: {
-                  'fill-opacity':1,
-                  'stroke-opacity':1,
-                  fill: 'none',
-                  stroke: function(d) {
-                      return tomtomStrokeColor(d.properties.ms1800/d.properties.msbase);
-                  },
-				  'stroke-width': '0.0000006px'
-              }
-          }).addTo(this.map);
-
-          d3.queue()
-              .defer(d3.json, "../data/coldplayDonderdagHoofdwegenFilteredGeom.json")
-              .defer(d3.csv, "../data/coldplayDonderdagHoofdwegenFilteredAttr.csv")
-              .await(merge);
-
-          function merge(error, coldplayDonderdagSelectionGeom, coldplayDonderdagSelectionAttr) {
-              if(error) { console.log(error); }
-
-              for (i = 0; i < coldplayDonderdagSelectionGeom.objects.coldplayDonderdagHoofdwegenFilteredGeom.geometries.length; i++) {
-                  for (j = 0; j < coldplayDonderdagSelectionAttr.length; j++) {
-                      if (coldplayDonderdagSelectionGeom.objects.coldplayDonderdagHoofdwegenFilteredGeom.geometries[i].properties.id == coldplayDonderdagSelectionAttr[j].id) {
-                          coldplayDonderdagSelectionGeom.objects.coldplayDonderdagHoofdwegenFilteredGeom.geometries[i].properties = coldplayDonderdagSelectionAttr[j];
-					  }
-				  }
-              }
-
-			  var features = topojson.feature(coldplayDonderdagSelectionGeom, coldplayDonderdagSelectionGeom.objects.coldplayDonderdagHoofdwegenFilteredGeom);
-              self.tomtomLayer.data = features.features;
-		  }
+          
 
 //		  var openChart = function(d){
 //		  	var app = document.querySelector('amsterdam-traffic-app');
@@ -330,7 +295,8 @@
 //		  		  ndwLayer.data = d.features;
 //		  });
 //		  /* */
-		  
+		  //Make sure this layer gets on top of baselayer
+		  this.map.orderLayers();
 		  window.map = this.map;
 		  
       },

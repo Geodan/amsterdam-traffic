@@ -1,0 +1,65 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-queue.v3.min.js"></script>
+<script src="//d3js.org/topojson.v2.min.js"></script>
+
+<dom-module id="tomtom-layer">
+<template>
+<style>
+</style>
+</template>
+
+		
+<script>
+Polymer({
+      is: 'tomtom-layer',
+      properties: {
+      	  map: {
+      	  	  type: Object,
+      	  	  observer: '_mapChanged'
+      	  }
+      },
+      _mapChanged: function(map){
+      	  var self = this;
+      	  var tomtomStrokeColor = d3.scaleLinear()
+              .domain([0, 0.01, 0.5, 1, 2])
+              .range(['lightGrey', 'red', 'yellow', 'green', 'darkGreen']);
+
+
+          this.tomtomLayer = new d3.mappu.VectorLayer('TomTomLayer',{
+              reproject: false,
+              style: {
+                  'fill-opacity':1,
+                  'stroke-opacity':1,
+                  fill: 'none',
+                  stroke: function(d) {
+                      return tomtomStrokeColor(d.properties.ms1800/d.properties.msbase);
+                  },
+				  'stroke-width': '0.0000006px'
+              }
+          }).addTo(this.map);
+
+          d3.queue()
+              .defer(d3.json, "../data/coldplayDonderdagHoofdwegenFilteredGeom.json")
+              .defer(d3.csv, "../data/coldplayDonderdagHoofdwegenFilteredAttr.csv")
+              .await(merge);
+
+          function merge(error, coldplayDonderdagSelectionGeom, coldplayDonderdagSelectionAttr) {
+              if(error) { console.log(error); }
+
+              for (i = 0; i < coldplayDonderdagSelectionGeom.objects.coldplayDonderdagHoofdwegenFilteredGeom.geometries.length; i++) {
+                  for (j = 0; j < coldplayDonderdagSelectionAttr.length; j++) {
+                      if (coldplayDonderdagSelectionGeom.objects.coldplayDonderdagHoofdwegenFilteredGeom.geometries[i].properties.id == coldplayDonderdagSelectionAttr[j].id) {
+                          coldplayDonderdagSelectionGeom.objects.coldplayDonderdagHoofdwegenFilteredGeom.geometries[i].properties = coldplayDonderdagSelectionAttr[j];
+					  }
+				  }
+              }
+
+			  var features = topojson.feature(coldplayDonderdagSelectionGeom, coldplayDonderdagSelectionGeom.objects.coldplayDonderdagHoofdwegenFilteredGeom);
+              self.tomtomLayer.data = features.features;
+		  }
+
+      }
+});
+</script>
+</dom-module>
