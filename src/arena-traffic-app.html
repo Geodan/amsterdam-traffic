@@ -14,7 +14,7 @@
 <script src="//d3js.org/topojson.v2.min.js"></script>
 
 
-<dom-module id="amsterdam-traffic-app">
+<dom-module id="arena-traffic-app">
   <template>
   <style include="iron-flex iron-flex-alignment"></style>
     <style>
@@ -46,14 +46,14 @@
 	
     </style>
     <paper-toolbar>
-    	<div class="title">Amsterdam Traffic App</div>
+    	<div class="title">Arena Traffic App</div>
     </paper-toolbar>
     <div class="layout horizontal">
     	<div id="content" class="flex">
 			<mappu-map class="fit" id='map' 
 				map={{map}}
-				center=[4.895975,52.372262]
-				zoom=21
+				center=[4.940509,52.313955]
+				zoom=23
 				
 			></mappu-map>
 		</div>
@@ -93,7 +93,7 @@
   <script>
     Polymer({
 
-      is: 'amsterdam-traffic-app',
+      is: 'arena-traffic-app',
 
       properties: {
         map: {
