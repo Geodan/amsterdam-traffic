@@ -206,13 +206,19 @@
 //    		}
 //		  }).addTo(this.map);
 
+          var tomtomStrokeColor = d3.scaleLinear()
+              .domain([0,2])
+              .range(['red','steelBlue']);
           this.tomtomLayer = new d3.mappu.VectorLayer('TomTomLayer',{
               reproject: false,
               style: {
                   'fill-opacity':1,
                   'stroke-opacity':1,
                   fill: 'none',
-                  stroke: 'steelBlue'
+                  stroke: function(d) {
+                      return tomtomStrokeColor(d.properties.ms1800/d.properties.msbase);
+                  },
+				  'stroke-width': '0.000001px'
               }
           }).addTo(this.map);
 
@@ -225,9 +231,13 @@
               if(error) { console.log(error); }
 
               for (i = 0; i < coldplayVrijdagSelection_geom.objects.coldplayVrijdagSelection.geometries.length; i++) {
-                  coldplayVrijdagSelection_geom.objects.coldplayVrijdagSelection.geometries[i].properties = coldplayVrijdagSelection_attr[i];
+                  for (j = 0; j < coldplayVrijdagSelection_attr.length; j++) {
+                      if (coldplayVrijdagSelection_geom.objects.coldplayVrijdagSelection.geometries[i].properties.id == coldplayVrijdagSelection_attr[j].id) {
+                          coldplayVrijdagSelection_geom.objects.coldplayVrijdagSelection.geometries[i].properties = coldplayVrijdagSelection_attr[j];
+					  }
+				  }
               }
-
+              
 			  var features = topojson.feature(coldplayVrijdagSelection_geom, coldplayVrijdagSelection_geom.objects.coldplayVrijdagSelection);
               self.tomtomLayer.data = features.features;
 		  }
