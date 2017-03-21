@@ -8,6 +8,7 @@
 <link rel="import" href="app-parking.html">
 <link rel="import" href="ndw-graph.html">
 <link rel="import" href="tomtom-layer.html">
+<link rel="import" href="ndw-layer.html">
 
 <!-- TODO: replace with bower versions -->
 <script src="https://d3js.org/d3.v4.min.js"></script>
@@ -57,9 +58,8 @@
 				center=[4.950509,52.30]
 				zoom=20
 			></mappu-map>
-			<tomtom-layer 
-				map=[[map]]
-			></tomtom-layer>
+			<tomtom-layer map=[[map]]></tomtom-layer>
+			<ndw-layer map=[[map]]></ndw-layer>
 		</div>
 		<div id="sidebar">
 			<ndw-graph id="RWS01_MONIBAS_0121hrl%" title="A2" url='../data/flow_a2_coldplay'></ndw-graph>
@@ -125,12 +125,19 @@
       },
       _mapChanged: function(){
       	  var self = this;
-      	  
+      	  /*
       	  var layer = new d3.mappu.RasterLayer('Achtergrond', {
 				ogc_type: 'tms',
 				url: "http://tile.stamen.com/toner/{z}/{x}/{y}.png"
 			}).addTo(this.map);
-			
+			*/
+		  new d3.mappu.RasterLayer('Basemap',  {
+             ogc_type: 'tms',
+             url: 'http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png',
+             visible: true,
+             opacity: 1
+ 		 })
+ 		 .addTo(this.map);
 			/*
 			new d3.mappu.VectorTileLayer('water',{
 				url: "http://tile.mapzen.com/mapzen/vector/v1/water/{z}/{x}/{y}.topojson?api_key=vector-tiles--R28NDY",
@@ -276,26 +283,9 @@
 //    		}]
 //		  }).addTo(this.map);
 //
-//		  /* NDW */
-//		  var speedscale = function(d){
-//      	  	  var s = d3.scaleLinear().range(['blue','yellow','red']).domain([0,50,130]);
-//      	  	  return s(d.properties.maxspeed);
-//      	  }
-//
-//		  var ndwLayer = new d3.mappu.VectorLayer('ndw',{
-//		  		  reproject: true,
-//		  		  style: {
-//		  		  	  stroke: speedscale,
-//		  		  	  fill: speedscale
-//		  		  }
-//		  }).addTo(this.map);
-//		  var ndwurl = 'http://192.168.40.8:3389/geoserver/research/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=research:tmp&maxFeatures=50000&outputFormat=application%2Fjson';
-//		  d3.json(ndwurl,function(error,d){
-//		  		  if (error) throw error;
-//		  		  ndwLayer.data = d.features;
-//		  });
+
 //		  /* */
-		  //Make sure this layer gets on top of baselayer
+		  //Make sure baselayer is on bottom
 		  this.map.orderLayers();
 		  window.map = this.map;
 		  

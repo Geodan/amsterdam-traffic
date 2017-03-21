@@ -1,0 +1,71 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-queue.v3.min.js"></script>
+<script src="//d3js.org/topojson.v2.min.js"></script>
+
+<dom-module id="ndw-layer">
+<template>
+<style>
+</style>
+</template>
+
+		
+<script>
+Polymer({
+      is: 'ndw-layer',
+      properties: {
+      	  map: {
+      	  	  type: Object,
+      	  	  observer: '_mapChanged'
+      	  }
+      },
+      _mapChanged: function(map){
+      	  var self = this;
+      	  var speedscale = function(d){
+      	  	  var s = d3.scaleLinear().range(['blue','yellow','red']).domain([0,50,130]);
+      	  	  return s(d.properties.speedarray[100]);
+      	  }
+
+		  var ndwLayer = new d3.mappu.VectorLayer('ndw',{
+		  		  reproject: false,
+		  		  style: {
+		  		  	  'stroke-width':'0.000002px',
+		  		  	  stroke: speedscale,
+		  		  	  fill: 'none'
+		  		  }
+		  }).addTo(this.map);
+		  
+		  
+		  var reistijdenUrl = '../data/reistijdenAmsterdam.geojson';
+          var speedUrl = '../data/flow_a2_coldplay';
+		  d3.queue()
+          	.defer(d3.json,reistijdenUrl)
+          	.defer(d3.csv,speedUrl)
+          	.await(merge);
+          	
+          function merge(error, geojson, csv) {
+              if(error) { console.log(error); }
+              features = geojson.features.filter(d=>d.properties.Id.indexOf('RWS01_MONIBAS_0021hrl') > -1);
+              for (i = 0; i < features.length; i++) {
+              	  features[i].properties.speedarray = [];
+                  for (j = 0; j < csv.length; j++) {
+                      if (features[i].properties.Id.substr(21,4) == csv[j].dist) {
+                          features[i].properties.speedarray.push(csv[j].vehiclespeed);
+					  }
+				  }
+              }
+              ndwLayer.data = features;
+		  }
+          	
+		  /*
+		  var ndwurl = 'http://192.168.40.8:3389/geoserver/research/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=research:tmp&maxFeatures=50000&outputFormat=application%2Fjson';
+		  d3.json(ndwurl,function(error,d){
+		  		  if (error) throw error;
+		  		  ndwLayer.data = d.features;
+		  });
+		  */
+
+      }
+});
+</script>
+</dom-module>
