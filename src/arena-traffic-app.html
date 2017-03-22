@@ -8,7 +8,7 @@
 <link rel="import" href="app-parking.html">
 <link rel="import" href="ndw-graph.html">
 <link rel="import" href="tomtom-layer.html">
-<link rel="import" href="ndw-layer.html">
+<!--<link rel="import" href="ndw-layer.html">-->
 
 <!-- TODO: replace with bower versions -->
 <script src="https://d3js.org/d3.v4.min.js"></script>
@@ -58,7 +58,7 @@
 				center=[4.950509,52.30]
 				zoom=20
 			></mappu-map>
-			<tomtom-layer map=[[map]]></tomtom-layer>
+			<tomtom-layer map=[[map]] time='ms1800'></tomtom-layer>
 			<ndw-layer map=[[map]]></ndw-layer>
 		</div>
 		<div id="sidebar">
@@ -138,6 +138,8 @@
              opacity: 1
  		 })
  		 .addTo(this.map);
+
+
 			/*
 			new d3.mappu.VectorTileLayer('water',{
 				url: "http://tile.mapzen.com/mapzen/vector/v1/water/{z}/{x}/{y}.topojson?api_key=vector-tiles--R28NDY",

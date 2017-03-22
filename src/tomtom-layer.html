@@ -17,14 +17,17 @@ Polymer({
       	  map: {
       	  	  type: Object,
       	  	  observer: '_mapChanged'
-      	  }
+      	  },
+          time: String
       },
       _mapChanged: function(map){
       	  var self = this;
       	  var tomtomStrokeColor = d3.scaleLinear()
-              .domain([0, 0.01, 0.5, 1, 2])
+              .domain([0, 0.001, 0.5, 1, 2])
               .range(['lightGrey', 'red', 'yellow', 'green', 'darkGreen']);
 
+      	  //var timeStamp = 'ms1800';
+          var timeStamp = this.time;
 
           this.tomtomLayer = new d3.mappu.VectorLayer('TomTomLayer',{
               reproject: false,
@@ -33,7 +36,7 @@ Polymer({
                   'stroke-opacity':1,
                   fill: 'none',
                   stroke: function(d) {
-                      return tomtomStrokeColor(d.properties.ms1800/d.properties.msbase);
+                      return tomtomStrokeColor(d.properties[timeStamp]/d.properties.msbase);
                   },
 				  'stroke-width': '0.0000006px'
               }
