@@ -65,7 +65,9 @@
     
 <paper-drawer-panel  right-drawer drawer-width="400px">
 	<paper-header-panel drawer>
-		<paper-toolbar></paper-toolbar>
+		<paper-toolbar>
+			<div class="title">[[_parseTime(curtime)]]</div>
+		</paper-toolbar>
 		<div> 
 			<ndw-graph id="A2graph" title="A2" ></ndw-graph>
 			<video id="thevideo" width="400" title="Video of a rabbit and butterfly" autoplay loop class="video-element">
@@ -105,13 +107,14 @@
 			observer: '_mapChanged'
 		},
 		curtime: {
-            	type: Object,
-            	observer: '_timeChanged'
+            type: Number
 		}
 	  },
       observers: [
       ],
-      
+      _parseTime: function(curtime){
+      	  return new Date(curtime).toLocaleTimeString();
+      },
       _handleObservations: function(res){
       	  this.observations = res.detail.response;
       },
@@ -126,12 +129,6 @@
       },
       _mapChanged: function(){
       	  var self = this;
-      	  /*
-      	  var layer = new d3.mappu.RasterLayer('Achtergrond', {
-				ogc_type: 'tms',
-				url: "http://tile.stamen.com/toner/{z}/{x}/{y}.png"
-			}).addTo(this.map);
-			*/
 		  new d3.mappu.RasterLayer('Basemap',  {
              ogc_type: 'tms',
              url: 'http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png',
@@ -139,155 +136,7 @@
              opacity: 1
  		 })
  		 .addTo(this.map);
-
-
-			/*
-			new d3.mappu.VectorTileLayer('water',{
-				url: "http://tile.mapzen.com/mapzen/vector/v1/water/{z}/{x}/{y}.topojson?api_key=vector-tiles--R28NDY",
-				layername: 'water',
-				style:{
-					stroke: 'rgb(20, 25, 66)',
-					'stroke-width': '1px',
-					fill: 'rgb(20, 25, 66)'
-				},
-				filter: function(d){
-					return d.geometry.type.indexOf('Polygon') > -1;
-				}
-			}).addTo(this.map);
-			/* */
-			/*
-			var roadscaleStroke = d3.scaleOrdinal()
-				.domain(['rail','highway','major_road','minor_road','ferry'])
-				.range(['#cbc9e2','#cbc9e2','#cbc9e2','#cbc9e2','#cbc9e2']);
-			var roadscaleStrokeWidth = d3.scaleOrdinal()
-				.domain(['rail','highway','major_road','minor_road','path'])
-				.range(['1px','2px','1px','0px','0px']);
-			new d3.mappu.VectorTileLayer('roads',{
-				url: "http://tile.mapzen.com/mapzen/vector/v1/roads/{z}/{x}/{y}.topojson?api_key=vector-tiles--R28NDY",
-				layername: 'roads',
-				style:{
-					stroke: function(d){
-						return roadscaleStroke(d.properties.kind);
-					},
-					'stroke-width': function(d){
-						return roadscaleStrokeWidth(d.properties.kind);
-					},
-					'stroke-opacity': 1,
-					fill: 'none'
-				},
-				filter: function(d){
-					return d.geometry.type.indexOf('LineString') > -1;
-				}
-			}).addTo(this.map);
-			*/
 			
-//      	  var scale = function(d){
-//      	  	  var s = d3.scale.linear().range(['blue','red']).domain([0,1]);
-//      	  	  return s(d.properties.fullness);
-//      	  }
-      	  
-//      	  this.isoLayer = new d3.mappu.VectorLayer('5 minuten lopen',{
-//    		reproject: false,
-//    		style: {
-//    			'fill-opacity':0,
-//    			'stroke-opacity':0,
-//    			fill: 'none',
-//    			stroke: 'steelBlue'
-//    		}
-//		  }).addTo(this.map);
-//		  this.isoFietsLayer = new d3.mappu.VectorLayer('10 minuten fietsen',{
-//    		reproject: false,
-//    		style: {
-//    			'fill-opacity':0,
-//    			'stroke-opacity':0,
-//    			fill: 'none',
-//    			stroke: 'orange'
-//    		}
-//		  }).addTo(this.map);
-
-          
-
-//		  var openChart = function(d){
-//		  	var app = document.querySelector('amsterdam-traffic-app');
-//			var id = d.properties.datastreamid;
-//			app.$.streamrequest.url = 'http://gost.geodan.nl/v1.0/Datastreams('+id+')/Observations';
-//			app.$.streamrequest.generateRequest();
-//			app.$.gostchart.label = d.properties.name;
-//		  }
-		  
-
-//		  this.locationLayer = new d3.mappu.VectorLayer('Parkeergarages',{
-//    		reproject: true,
-//    		style: {
-//    			fill: function(d){return d.properties.isopen?'green':'red';},
-//    			radius: 10,
-//    			'marker-url': './assets/parking-128.png'
-//    		},
-//    		labelfield: 'label',
-//    		labelStyle: {
-//    			'font-family':"'Open Sans Light',Helvetica,Arial,sans-serif",
-//    			'font-size':'20',
-//    			stroke: 'none',
-//
-//    		},
-//    		events: [{
-//    			event: 'click',
-//    			action: openChart
-//    		},{
-//    			event: 'mouseenter',
-//    			action: function(d){
-//    				d3.selectAll('#entity'+d.id).select('path').style('fill','orange').transition().style('fill-opacity',0.6);
-//    			}
-//    		},{
-//    			event: 'mouseleave',
-//    			action: function(d){
-//    				d3.selectAll('#entity'+d.id).select('path').transition().style('fill-opacity',0.01).style('fill','none');
-//    			}
-//    		}]
-//		  }).addTo(this.map);
-//		  var self = this;
-		  
-//		  var labelColor = function(d){
-//    				if (d.properties.available == 0){
-//    					return 'red';
-//    				}
-//    				else if (d.properties.available < 10){
-//    					return 'orange';
-//    				}
-//    				else return 'green';
-//    	  };
-//		  this.fietslocationLayer = new d3.mappu.VectorLayer('OVFiets punten',{
-//    		reproject: true,
-//    		style: {
-//    			fill: function(d){return d.properties.isopen?'green':'red';},
-//    			radius: 10,
-//    			'marker-url': './assets/parking-128.png'
-//    		},
-//    		labelfield: 'label',
-//    		labelStyle: {
-//    			'font-family':"'Open Sans Light',Helvetica,Arial,sans-serif",
-//    			'font-size':'20',
-//    			stroke: 'none',
-//    			fill: labelColor
-//    		},
-//    		events: [{
-//    			event: 'click',
-//    			action: openChart
-//    		},{
-//    			event: 'mouseover',
-//    			action: function(d){
-//    				d3.selectAll('#entity'+d.id).select('path').style('fill','orange').style('fill-opacity',0.3);
-//    			}
-//    		},{
-//    			event: 'mouseout',
-//    			action: function(d){
-//    				d3.selectAll('#entity'+d.id).select('path').transition().style('fill-opacity',0.01).style('fill','none');
-//    			}
-//    		}]
-//		  }).addTo(this.map);
-//
-
-//		  /* */
 		  //Make sure baselayer is on bottom
 		  this.map.orderLayers();
 		  window.map = this.map;
@@ -298,9 +147,9 @@
       	  this.map.resize();
       	  this.$.A2graph.url = './data/flow_A2_coldplay';
       	  this.$.timeslider.addEventListener('timechange', function(e){
-			  var curtime = e.detail; 
-			  self.$.tomtomlayer.time = curtime;
-			  self.$.A2graph.curtime = curtime;
+			  self.curtime = e.detail; 
+			  self.$.tomtomlayer.time = e.detail;
+			  self.$.A2graph.curtime = e.detail;
       	  });
       	  
           	  

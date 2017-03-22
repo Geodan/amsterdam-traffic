@@ -1,10 +1,13 @@
 <link rel="import" href="../bower_components/paper-slider/paper-slider.html">
 
 <dom-module id="time-slider">
+<style>
+	#timeslider {
+		width: 100%;
+	}
+</style>
   <template>
   		<paper-slider id='timeslider' on-immediate-value-change='_fireTimeChange' immediate-value="{{curtime}}" step=1000></paper-slider>
-		<div>[[curtime]]</div>
-  
     </template>
 
 <script>
