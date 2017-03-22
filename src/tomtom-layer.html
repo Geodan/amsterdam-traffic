@@ -28,6 +28,8 @@ Polymer({
           var minutesString = (Math.round(date.getMinutes() / 15) * 15).toString();
           if (minutesString.length < 2) {
               minutesString = '0' + minutesString;
+          } else if (minutesString === '60') {
+              minutesString = '00';
           }
           var formattedTime = 'ms' + date.getHours().toString() + minutesString;
           var tomtomStrokeColor = d3.scaleLinear()
