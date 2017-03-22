@@ -134,12 +134,18 @@
       	  if (new Date(time) > new Date('2016-06-23 19:00')){
       	  	this.$.thevideo.play();
       	  }
+      	  else if (new Date(time) < new Date('2016-06-23 19:00')){
+      	  	  this.$.thevideo.pause();
+      	  }
+      	  if (new Date(time) > new Date('2016-06-23 21:00')){
+      	  	this.$.thevideo.pause();
+      	  }
       },
       _mapChanged: function(){
       	  var self = this;
 		  new d3.mappu.RasterLayer('Basemap',  {
              ogc_type: 'tms',
-             url: 'http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png',
+             url: 'http://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png',
              visible: true,
              opacity: 1
  		 })

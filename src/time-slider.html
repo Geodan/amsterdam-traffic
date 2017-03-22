@@ -39,7 +39,7 @@ Polymer({
 	  	  var self = this;
 	  	  if (!this.playing){
 	  	  	  this.playing = true;
-	  	  	  this.$.timeslider.step = 1000 * 60;
+	  	  	  this.$.timeslider.step = 1000 * 60 * 3;
 	  	  	  this.interval = window.setInterval(function(){
 				  self.$.timeslider.increment();
 				  self.fire('timechange',self.curtime);
