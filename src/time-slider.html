@@ -16,10 +16,14 @@ Polymer({
       	  	  observer: '_timeChanged'
       	  }
       },
+      attached: function(){
+      	  this.$.timeslider.min = new Date('2016-06-23 15:30').getTime();
+		  this.$.timeslider.max = new Date('2016-06-23 21:30').getTime();
+	  },
       _timeChanged: function(time){
       },
-      _fireTimeChange: function(event){
-      	  this.fire('timechange',event.detail);
+      _fireTimeChange: function(event,d){
+      	  this.fire('timechange',this.curtime);
       }
 });
 </script>

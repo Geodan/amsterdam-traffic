@@ -10,6 +10,7 @@
 <link rel="import" href="app-parking.html">
 <link rel="import" href="ndw-graph.html">
 <link rel="import" href="tomtom-layer.html">
+<link rel="import" href="time-slider.html">
 <!--<link rel="import" href="ndw-layer.html">-->
 
 <!-- TODO: replace with bower versions -->
@@ -84,7 +85,7 @@
 					center=[5.035440,52.309181]
 					zoom=20
 			></mappu-map>
-			<time-slider></time-slider>
+			<time-slider id='timeslider'></time-slider>
 		</div>
     </paper-header-panel>
    </paper-drawer-panel>
@@ -299,10 +300,9 @@
       	  this.$.timeslider.addEventListener('timechange', function(e){
 			  var curtime = e.detail; 
 			  self.$.tomtomlayer.time = curtime;
-			  self.$.A2graph.curtime = time;
+			  self.$.A2graph.curtime = curtime;
       	  });
-      	  this.$.timeslider.min = new Date('2016-06-23 15:30').getTime();
-		  this.$.timeslider.max = new Date('2016-06-23 21:30').getTime();
+      	  
           	  
       }
     });
