@@ -45,7 +45,7 @@ Polymer({
               this.oldTime = formattedTime;
               var tomtomStrokeColor = d3.scaleLinear()
                   .domain([0, 0.001, 0.5, 1, 2])
-                  .range(['lightGrey', 'red', 'yellow', 'green', 'darkGreen']);
+                  .range(['#434343', '#ca562c', '#edbb8a', '#b4c8a8', '#008080']);
               this.tomtomLayer.drawboard.selectAll('.entity')
                   .select('path')
                   .transition()
@@ -61,10 +61,7 @@ Polymer({
       	  var self = this;
       	  var tomtomStrokeColor = d3.scaleLinear()
               .domain([0, 0.001, 0.5, 1, 2])
-              .range(['lightGrey', 'red', 'yellow', 'green', 'darkGreen']);
-
-
-          //var timeStamp = this.formattedTime;
+              .range(['#434343', '#ca562c', '#edbb8a', '#b4c8a8', '#008080']);
 
           this.tomtomLayer = new d3.mappu.VectorLayer('TomTomLayer',{
               reproject: false,
@@ -73,7 +70,7 @@ Polymer({
                   'stroke-opacity':1,
                   fill: 'none',
                   stroke: function(d) {
-                      return tomtomStrokeColor(d.properties[this.formattedTime]/d.properties.msbase);
+                      return tomtomStrokeColor(d.properties['ms1500']/d.properties.msbase);
                   },
 				  'stroke-width': '0.0000006px'
               }
