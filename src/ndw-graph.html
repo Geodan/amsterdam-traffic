@@ -52,8 +52,8 @@
 				]
 			}
           },
-          
           attached: function(){
+          	var self = this;
           	var margin = {top: 40, right: 40, bottom: 40, left: 40},
 				width = this.parentElement.offsetWidth - margin.left - margin.right,
 				height = 400 - margin.top - margin.bottom;
@@ -91,13 +91,22 @@
 				.style("text-anchor", "start");
 			
 			svg.append('text').attr('x',0).attr('y',-20).text(this.title);
+			d3.select(this.$.graph).select('svg').selectAll('.milestone').data(this.locationdata).enter()
+				.append('text')
+				.classed('milestone',true)
+				.attr('x',300)
+				.attr('y',function(d){return self.scaley(d.km);})
+				.text(function(d){return d.name;});
           },
           _urlChanged: function(url){
           	  var self = this;
-          	  d3.csv(url,(error,data)=>{
-      	  		  if (error){console.log(error);}
-      	  		  self.addData(data.filter(d=>d.vehiclespeed > 0));
-			  });
+          	  
+          	  
+				  d3.csv(url,(error,data)=>{
+					  if (error){console.log(error);}
+					  self.addData(data.filter(d=>d.vehiclespeed > 0));
+				  });
+			  
           },
           addData: function(data){
           	  var self = this;
@@ -139,16 +148,8 @@
 					})
 					.attr('r',1.5)
 					
-			d3.select(this.$.graph).select('svg').selectAll('.milestone').data(this.locationdata).enter()
-				.append('text')
-				.classed('milestone',true)
-				.attr('x',300)
-				.attr('y',function(d){return self.scaley(d.km);})
-				.text(function(d){return d.name;});
-				
-					
+			
           }
-
         });
       </script>
 
