@@ -1,4 +1,6 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../bower_components/paper-drawer-panel/paper-drawer-panel.html">
 <link rel="import" href="../bower_components/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../bower_components/mappu-elements/mappu-map.html">
@@ -26,15 +28,17 @@
 	mappu-map {
 		--map-background: white;
 		cursor: crosshair;
-	}
-	
-	#content {
-		min-height: 1000px; 
-	}
-	#sidebar {
-		width: 400px;
 		height: 100%;
 	}
+	
+	.container {
+      @apply(--layout-vertical);
+      height: 100%;
+    }
+    .flexchild {
+      @apply(--layout-flex);
+    }
+	
 	.tile {
 	  position: absolute;
 	  width: 256px;
@@ -47,45 +51,46 @@
 	  stroke-linecap: round;
 	}
 	
+	#bottombar {
+		background: steelBlue;
+		height: 100px;
+	}
+	
+	#timeslider {
+		width: 100%;
+	}
+	
     </style>
-    <paper-toolbar>
-    	<div class="title">Arena Traffic App</div>
-    </paper-toolbar>
-    <div class="layout horizontal">
-    	<div id="content" class="flex">
-			<mappu-map class="fit" id='map' 
-				map={{map}}
-				center=[4.950509,52.30]
-				zoom=20
-			></mappu-map>
-			<tomtom-layer id='tomtomlayer' map=[[map]] ></tomtom-layer>
-			<ndw-layer map=[[map]]></ndw-layer>
-		</div>
-		<div id="sidebar">
+    
+<paper-drawer-panel  right-drawer drawer-width="400px">
+	<paper-header-panel drawer>
+		<paper-toolbar></paper-toolbar>
+		<div> 
 			<ndw-graph id="A2graph" title="A2" ></ndw-graph>
 			<video id="thevideo" width="400" title="Video of a rabbit and butterfly" autoplay loop class="video-element">
 				<source src="../assets/A2_coldplay.webm" type="video/mp4">
 				<source src="../assets/A2_coldplay.webm" type="video/ogg">
-			  </video>
+			</video>
+		
 		</div>
-    </div>
-    <!--
-    <app-parking
-    	thingsurl=[[thingsurl]]
-    	on-locations='_handleParkingLocations'
-    	on-isochrones='_handleParkingIsochrones'
-    ></app-parking>
-    -->
-	
-	<iron-ajax id='streamrequest'
-		url='[[getStreamUrl]]'
-		params='{"$top":200}'
-		handle-as="json"
-		on-response='_handleObservations'
-		></iron-ajax>		
-			
-    </template>
-    
+    </paper-header-panel>
+    <paper-header-panel main>
+		<paper-toolbar>
+			<div class="title">Traffic app Amsterdam Arena</div>
+		</paper-toolbar>
+		<div class='container'>
+			<mappu-map class="flexchild" id='map' 
+					map={{map}}
+					center=[5.035440,52.309181]
+					zoom=20
+			></mappu-map>
+			<time-slider></time-slider>
+		</div>
+    </paper-header-panel>
+   </paper-drawer-panel>
+    <!-- Non UI elements -->
+	<tomtom-layer id='tomtomlayer' map=[[map]] ></tomtom-layer>
+	<ndw-layer map=[[map]]></ndw-layer>
   </template>
 
   <script>
@@ -98,18 +103,14 @@
 			type: Object,
 			observer: '_mapChanged'
 		},
-		thingsurl: {
-			type: String,
-			value: "http://gost.geodan.nl/v1.0/Things"
-		},
-		observationsUrl: {
-			type: String,
-			value: "http://gost.geodan.nl/v1.0/Observations"
+		curtime: {
+            	type: Object,
+            	observer: '_timeChanged'
 		}
 	  },
       observers: [
       ],
-     
+      
       _handleObservations: function(res){
       	  this.observations = res.detail.response;
       },
@@ -295,10 +296,14 @@
       	  var self = this;
       	  this.map.resize();
       	  this.$.A2graph.url = './data/flow_A2_coldplay';
-      	  this.$.A2graph.addEventListener('timechange', function(e){
+      	  this.$.timeslider.addEventListener('timechange', function(e){
 			  var curtime = e.detail; 
 			  self.$.tomtomlayer.time = curtime;
+			  self.$.A2graph.curtime = time;
       	  });
+      	  this.$.timeslider.min = new Date('2016-06-23 15:30').getTime();
+		  this.$.timeslider.max = new Date('2016-06-23 21:30').getTime();
+          	  
       }
     });
   </script>

@@ -1,0 +1,26 @@
+<link rel="import" href="../bower_components/paper-slider/paper-slider.html">
+
+<dom-module id="time-slider">
+  <template>
+  		<paper-slider id='timeslider' on-immediate-value-change='_fireTimeChange' immediate-value="{{curtime}}" step=1000></paper-slider>
+		<div>[[curtime]]</div>
+  
+    </template>
+
+<script>
+Polymer({
+      is: 'time-slider',
+      properties: {
+      	  curtime: {
+      	  	  type: Object,
+      	  	  observer: '_timeChanged'
+      	  }
+      },
+      _timeChanged: function(time){
+      },
+      _fireTimeChange: function(event){
+      	  this.fire('timechange',event.detail);
+      }
+});
+</script>
+      

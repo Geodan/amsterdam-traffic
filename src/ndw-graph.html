@@ -1,4 +1,4 @@
-<link rel="import" href="../bower_components/paper-slider/paper-slider.html">
+
 <dom-module id="ndw-graph">
 
       <template>
@@ -34,8 +34,7 @@
         
 
         <div id="graph"></div>
-        <paper-slider id='timeslider' on-immediate-value-changed='_fireTimeChange' immediate-value="{{curtime}}" step=1000></paper-slider>
-        <div>[[curtime]]</div>
+        
         
       </template>
 
@@ -132,9 +131,6 @@
 					.attr('y2',400);
           	  }
           },
-          _fireTimeChange: function(event){
-          	  this.fire('timechange',this.curtime);
-          },
           addData: function(data){
           	  var self = this;
           	  var mindist = d3.min(data, function(d){return d.dist;})
@@ -147,8 +143,6 @@
           	  this.scalex.domain([new Date(mindate), new Date(maxdate)]);
           	  d3.select(this.$.graph).select('.axis--x').transition().duration(1500).call(this.xAxis);
           	  
-          	  this.$.timeslider.min = new Date(mindate).getTime();
-          	  this.$.timeslider.max = new Date(maxdate).getTime();
           	  
           	  var speedcolor = d3.scaleLinear()
 				.domain([0,50,130])
