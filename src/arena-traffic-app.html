@@ -26,6 +26,15 @@
     :host {
         display: block;
     }
+    
+    paper-toolbar {
+		--paper-toolbar-background: grey;
+		--paper-toolbar-title: {
+		  font-style: italic;
+		  font-weight: bold;
+		};
+    }
+  
 	mappu-map {
 		--map-background: white;
 		cursor: crosshair;
@@ -70,7 +79,7 @@
 		</paper-toolbar>
 		<div> 
 			<ndw-graph id="A2graph" title="A2" ></ndw-graph>
-			<video id="thevideo" width="400" title="Video of a rabbit and butterfly" autoplay loop class="video-element">
+			<video id="thevideo" width="400" title="Video of a rabbit and butterfly" loop class="video-element">
 				<source src="../assets/A2_coldplay.webm" type="video/mp4">
 				<source src="../assets/A2_coldplay.webm" type="video/ogg">
 			</video>
@@ -79,6 +88,7 @@
     </paper-header-panel>
     <paper-header-panel main>
 		<paper-toolbar>
+			<div><img src="../assets/Geodan_logo_rgb.png"/ height="75px"></div> 
 			<div class="title">Traffic app Amsterdam Arena</div>
 		</paper-toolbar>
 		<div class='container'>
@@ -111,7 +121,8 @@
             type: Number,
             value: function(){
             	return new Date('2016-06-23 17:00');
-            }
+            },
+            observer: '_timeChanged'
 		}
 	  },
       observers: [
@@ -119,17 +130,10 @@
       _parseTime: function(curtime){
       	  return new Date(curtime).toLocaleTimeString();
       },
-      _handleObservations: function(res){
-      	  this.observations = res.detail.response;
-      },
-      _handleParkingLocations: function(msg){
-      	  this.locationLayer.data = msg.detail;
-      },
-      _handleParkingIsochrones: function(msg){
-      	  this.isoLayer.data = msg.detail;
-      },
-      _getId: function(item){
-      	  return item["@iot.id"];
+      _timeChanged: function(time){
+      	  if (new Date(time) > new Date('2016-06-23 19:00')){
+      	  	this.$.thevideo.play();
+      	  }
       },
       _mapChanged: function(){
       	  var self = this;
