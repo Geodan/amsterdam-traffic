@@ -18,7 +18,27 @@ Polymer({
       	  	  type: Object,
       	  	  observer: '_mapChanged'
       	  },
-          time: String
+          time: {
+      	      type: String,
+              observer: '_timeChanged'
+          }
+      },
+      _timeChanged: function(time) {
+          var date = new Date(time);
+          var minutesString = (Math.round(date.getMinutes() / 15) * 15).toString();
+          if (minutesString.length < 2) {
+              minutesString = '0' + minutesString;
+          }
+          var formattedTime = 'ms' + date.getHours().toString() + minutesString;
+          var tomtomStrokeColor = d3.scaleLinear()
+              .domain([0, 0.001, 0.5, 1, 2])
+              .range(['lightGrey', 'red', 'yellow', 'green', 'darkGreen']);
+          this.tomtomLayer.drawboard.selectAll('.entity')
+              .select('path')
+              .style('stroke',function(d){
+                  return tomtomStrokeColor(d.properties[formattedTime]/d.properties.msbase);
+              });
+
       },
       _mapChanged: function(map){
       	  var self = this;
@@ -26,8 +46,8 @@ Polymer({
               .domain([0, 0.001, 0.5, 1, 2])
               .range(['lightGrey', 'red', 'yellow', 'green', 'darkGreen']);
 
-      	  //var timeStamp = 'ms1800';
-          var timeStamp = this.time;
+
+          //var timeStamp = this.formattedTime;
 
           this.tomtomLayer = new d3.mappu.VectorLayer('TomTomLayer',{
               reproject: false,
@@ -36,29 +56,29 @@ Polymer({
                   'stroke-opacity':1,
                   fill: 'none',
                   stroke: function(d) {
-                      return tomtomStrokeColor(d.properties[timeStamp]/d.properties.msbase);
+                      return tomtomStrokeColor(d.properties[this.formattedTime]/d.properties.msbase);
                   },
 				  'stroke-width': '0.0000006px'
               }
           }).addTo(this.map);
 
           d3.queue()
-              .defer(d3.json, "./data/coldplayDonderdagHoofdwegenFilteredGeom.json")
-              .defer(d3.csv, "./data/coldplayDonderdagHoofdwegenFilteredAttr.csv")
+              .defer(d3.json, "./data/coldplay_donderdag_compleet_topo.json")
+              .defer(d3.csv, "./data/coldplay_donderdag_compleet.csv")
               .await(merge);
 
           function merge(error, coldplayDonderdagSelectionGeom, coldplayDonderdagSelectionAttr) {
               if(error) { console.log(error); }
 
-              for (i = 0; i < coldplayDonderdagSelectionGeom.objects.coldplayDonderdagHoofdwegenFilteredGeom.geometries.length; i++) {
+              for (i = 0; i < coldplayDonderdagSelectionGeom.objects.coldplay_donderdag_compleet.geometries.length; i++) {
                   for (j = 0; j < coldplayDonderdagSelectionAttr.length; j++) {
-                      if (coldplayDonderdagSelectionGeom.objects.coldplayDonderdagHoofdwegenFilteredGeom.geometries[i].properties.id == coldplayDonderdagSelectionAttr[j].id) {
-                          coldplayDonderdagSelectionGeom.objects.coldplayDonderdagHoofdwegenFilteredGeom.geometries[i].properties = coldplayDonderdagSelectionAttr[j];
+                      if (coldplayDonderdagSelectionGeom.objects.coldplay_donderdag_compleet.geometries[i].properties.id == coldplayDonderdagSelectionAttr[j].id) {
+                          coldplayDonderdagSelectionGeom.objects.coldplay_donderdag_compleet.geometries[i].properties = coldplayDonderdagSelectionAttr[j];
 					  }
 				  }
               }
 
-			  var features = topojson.feature(coldplayDonderdagSelectionGeom, coldplayDonderdagSelectionGeom.objects.coldplayDonderdagHoofdwegenFilteredGeom);
+			  var features = topojson.feature(coldplayDonderdagSelectionGeom, coldplayDonderdagSelectionGeom.objects.coldplay_donderdag_compleet);
               self.tomtomLayer.data = features.features;
 		  }
 
