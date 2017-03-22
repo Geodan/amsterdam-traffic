@@ -21,7 +21,7 @@
 		}
 		
 		.milestone {
-				font: oblique 10px Georgia, serif;
+				font: oblique 8pt Georgia, serif;
 		}
         </style>
 
@@ -40,13 +40,23 @@
             url: {
             	type: String,
             	observer: '_urlChanged'
-            }
+            },
+            locationdata: {
+            	type: Array,
+            	value: [
+            		{name:'Ring A10',km:31.9},
+					{name:'Afslag Arena',km:33.3},
+					{name:'Ritsen A9',km:33.9},
+					{name:'Abcoude',km:38.7},
+					{name:'Vinkeveen',km:43.8}
+				]
+			}
           },
           
-          ready: function(){
+          attached: function(){
           	var margin = {top: 40, right: 40, bottom: 40, left: 40},
-				width = 450 - margin.left - margin.right,
-				height = 200 - margin.top - margin.bottom;
+				width = this.parentElement.offsetWidth - margin.left - margin.right,
+				height = 400 - margin.top - margin.bottom;
 			this.scaley = d3.scaleLinear().range([height,0]).domain([20,150]);
 			this.scalex = d3.scaleTime().range([0,width]).domain([new Date('2016-06-23 15:30') ,new Date('2016-06-23 21:30')]);
 			
@@ -86,7 +96,7 @@
           	  var self = this;
           	  d3.csv(url,(error,data)=>{
       	  		  if (error){console.log(error);}
-      	  		  self.addData(data);
+      	  		  self.addData(data.filter(d=>d.vehiclespeed > 0));
 			  });
           },
           addData: function(data){
@@ -108,16 +118,17 @@
 				.domain([1000,3000,8000])
 				.range(['purple','red','yellow']);
           	  	var drawboard = d3.select(this.$.graph).select('.drawboard');
-				circle = drawboard.selectAll('circle').data(data);
+				circle = drawboard.selectAll('rect').data(data);
 				
-				circle.enter().append('circle')
-					.attr('cx',function(d){
+				circle.enter().append('rect')
+					.attr('x',function(d){
 						var date = new Date(d.date);
 						return self.scalex(date);
 					})
-					.attr('cy',function(d){
+					.attr('y',function(d){
 						return self.scaley(d.dist / 10);
 					})
+					.attr('width',1).attr('height',10)
 					.style('fill',function(d){
 						switch ('speed'){
 							case 'speed':
@@ -127,6 +138,15 @@
 						}
 					})
 					.attr('r',1.5)
+					
+			d3.select(this.$.graph).select('svg').selectAll('.milestone').data(this.locationdata).enter()
+				.append('text')
+				.classed('milestone',true)
+				.attr('x',300)
+				.attr('y',function(d){return self.scaley(d.km);})
+				.text(function(d){return d.name;});
+				
+					
           }
 
         });
