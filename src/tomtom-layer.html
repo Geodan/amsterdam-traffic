@@ -43,8 +43,8 @@ Polymer({
           }).addTo(this.map);
 
           d3.queue()
-              .defer(d3.json, "../data/coldplayDonderdagHoofdwegenFilteredGeom.json")
-              .defer(d3.csv, "../data/coldplayDonderdagHoofdwegenFilteredAttr.csv")
+              .defer(d3.json, "./data/coldplayDonderdagHoofdwegenFilteredGeom.json")
+              .defer(d3.csv, "./data/coldplayDonderdagHoofdwegenFilteredAttr.csv")
               .await(merge);
 
           function merge(error, coldplayDonderdagSelectionGeom, coldplayDonderdagSelectionAttr) {

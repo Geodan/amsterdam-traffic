@@ -36,8 +36,8 @@ Polymer({
 		  }).addTo(this.map);
 		  
 		  
-		  var reistijdenUrl = '../data/reistijdenAmsterdam.geojson';
-          var speedUrl = '../data/flow_a2_coldplay';
+		  var reistijdenUrl = './data/reistijdenAmsterdam.geojson';
+          var speedUrl = './data/flow_A2_coldplay';
 		  d3.queue()
           	.defer(d3.json,reistijdenUrl)
           	.defer(d3.csv,speedUrl)

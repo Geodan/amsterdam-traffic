@@ -32,7 +32,7 @@
 		min-height: 1000px; 
 	}
 	#sidebar {
-		width: 5%;
+		width: 400px;
 		height: 100%;
 	}
 	.tile {
@@ -62,12 +62,8 @@
 			<ndw-layer map=[[map]]></ndw-layer>
 		</div>
 		<div id="sidebar">
-			<ndw-graph id="RWS01_MONIBAS_0121hrl%" title="A2" url='../data/flow_a2_coldplay'></ndw-graph>
-			<ndw-graph id="RWS01_MONIBAS_0091hrr0%" title="A9" url='../data/flow_a9_coldplay'></ndw-graph>
-			<gost-chart id='gostchart'
-				label='Grafiek'
-				resultarray=[[observations]]
-			></gost-chart>
+			<ndw-graph id="A2graph" title="A2" ></ndw-graph>
+			<!--<ndw-graph id="RWS01_MONIBAS_0091hrr0%" title="A9" url='../data/flow_a9_coldplay'></ndw-graph>-->
 		</div>
     </div>
     <!--
@@ -294,7 +290,7 @@
       },
       attached: function(){
       	  this.map.resize();
-      	  
+      	  this.$.A2graph.url = './data/flow_A2_coldplay';
       	  
       }
     });
