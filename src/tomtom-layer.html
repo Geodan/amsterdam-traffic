@@ -32,14 +32,20 @@ Polymer({
               minutesString = '00';
           }
           var formattedTime = 'ms' + date.getHours().toString() + minutesString;
-          var tomtomStrokeColor = d3.scaleLinear()
-              .domain([0, 0.001, 0.5, 1, 2])
-              .range(['lightGrey', 'red', 'yellow', 'green', 'darkGreen']);
-          this.tomtomLayer.drawboard.selectAll('.entity')
-              .select('path')
-              .style('stroke',function(d){
-                  return tomtomStrokeColor(d.properties[formattedTime]/d.properties.msbase);
-              });
+          if (formattedTime !== this.oldTime) {
+              this.oldTime = formattedTime;
+              var tomtomStrokeColor = d3.scaleLinear()
+                  .domain([0, 0.001, 0.5, 1, 2])
+                  .range(['lightGrey', 'red', 'yellow', 'green', 'darkGreen']);
+              this.tomtomLayer.drawboard.selectAll('.entity')
+                  .select('path')
+                  .transition()
+                  .style('stroke',function(d){
+                      return tomtomStrokeColor(d.properties[formattedTime]/d.properties.msbase);
+                  });
+
+          }
+
 
       },
       _mapChanged: function(map){
