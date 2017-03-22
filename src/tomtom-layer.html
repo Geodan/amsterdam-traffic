@@ -25,13 +25,22 @@ Polymer({
       },
       _timeChanged: function(time) {
           var date = new Date(time);
+
+          var hours = date.getHours();
+          if (hours < 15) {
+              hoursString = '15';
+          } else if (hours > 21) {
+              hoursString = '21';
+          } else {
+              hoursString = hours.toString();
+          }
+
           var minutesString = (Math.round(date.getMinutes() / 15) * 15).toString();
-          if (minutesString.length < 2) {
-              minutesString = '0' + minutesString;
-          } else if (minutesString === '60') {
+          if (minutesString === '0' || minutesString === '60' || hoursString === '21') {
               minutesString = '00';
           }
-          var formattedTime = 'ms' + date.getHours().toString() + minutesString;
+
+          var formattedTime = 'ms' + hoursString + minutesString;
           if (formattedTime !== this.oldTime) {
               this.oldTime = formattedTime;
               var tomtomStrokeColor = d3.scaleLinear()
