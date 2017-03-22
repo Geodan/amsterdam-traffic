@@ -58,7 +58,7 @@
 				center=[4.950509,52.30]
 				zoom=20
 			></mappu-map>
-			<tomtom-layer map=[[map]]></tomtom-layer>
+			<tomtom-layer id='tomtomlayer' map=[[map]]></tomtom-layer>
 			<ndw-layer map=[[map]]></ndw-layer>
 		</div>
 		<div id="sidebar">
@@ -287,9 +287,13 @@
 		  
       },
       attached: function(){
+      	  var self = this;
       	  this.map.resize();
       	  this.$.A2graph.url = './data/flow_A2_coldplay';
-      	  
+      	  this.$.A2graph.addEventListener('timechange', function(e){
+			  var curtime = e.detail; 
+			  self.$.tomtomlayer.time = curtime;
+      	  });
       }
     });
   </script>
