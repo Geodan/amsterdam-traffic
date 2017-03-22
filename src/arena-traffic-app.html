@@ -94,8 +94,8 @@
 		<div class='container'>
 			<mappu-map class="flexchild" id='map' 
 					map={{map}}
-					center=[5.035440,52.309181]
-					zoom=20
+					center=[4.975440,52.299181]
+					zoom=22
 			></mappu-map>
 			<!--<mappu-layermanager map=[[map]]></mappu-layermanager>-->
 			<time-slider id='timeslider'></time-slider>
@@ -131,13 +131,16 @@
       	  return new Date(curtime).toLocaleTimeString();
       },
       _timeChanged: function(time){
-      	  if (new Date(time) > new Date('2016-06-23 19:00')){
+      	  if (new Date(time) > new Date('2016-06-23 19:00') && new Date(time) < new Date('2016-06-23 20:30')){
+      	  	d3.select(this.$.thevideo).style('display','block');
       	  	this.$.thevideo.play();
       	  }
       	  else if (new Date(time) < new Date('2016-06-23 19:00')){
-      	  	  this.$.thevideo.pause();
+      	  	d3.select(this.$.thevideo).style('display','none');
+      	  	this.$.thevideo.pause();
       	  }
-      	  if (new Date(time) > new Date('2016-06-23 21:00')){
+      	  else if (new Date(time) > new Date('2016-06-23 20:30')){
+      	  	d3.select(this.$.thevideo).style('display','none');
       	  	this.$.thevideo.pause();
       	  }
       },
@@ -150,6 +153,19 @@
              opacity: 1
  		 })
  		 .addTo(this.map);
+ 		 var camlayer = new d3.mappu.VectorLayer('Cameras', {
+ 		 	reproject: true,
+ 		 	style: {
+ 		 		radius: 10,
+ 		 		fill: 'red',
+ 		 		'marker-url': './assets/camera.png'
+ 		 	}
+ 		 }).addTo(this.map);
+ 		 var cam = {type: 'Feature',geometry: {
+ 		 	 type: 'Point',
+ 		 	 coordinates: [4.942966,52.298571]
+ 		 }};
+ 		 camlayer.data = [cam];
 			
 		  //Make sure baselayer is on bottom
 		  this.map.orderLayers();
